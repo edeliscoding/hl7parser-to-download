@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>HL7 Parser</title>
+  </head>
+  <body>
+    <main class="main">
+      <div class="wrapper">
+        <h1>HL7 Parser and Download to Excel</h1>
+        <div class="upload">
+          <input type="file" id="hl7FileInput" accept=".hl7" />
+          <button id="parseButton" disabled>Download to Excel</button>
+        </div>
+      </div>
+    </main>
+    <script>
+      // Function to send HL7 file to server for parsing
+      async function parseHL7(file) {
+        try {
+          const formData = new FormData();
+          formData.append("hl7File", file);
+
+          const response = await fetch("http://localhost:3000/parseHL7", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to parse HL7");
+          }
+
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "parsed_data.xlsx";
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error("Error parsing HL7:", error);
+          alert("Failed to parse HL7");
+        }
+      }
+
+      // Event listener for file input change
+      document
+        .getElementById("hl7FileInput")
+        .addEventListener("change", (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            document.getElementById("parseButton").disabled = false;
+          } else {
+            document.getElementById("parseButton").disabled = true;
+          }
+        });
+
+      // Event listener for parse button click
+      document.getElementById("parseButton").addEventListener("click", () => {
+        const file = document.getElementById("hl7FileInput").files[0];
+        if (file) {
+          parseHL7(file);
+        } else {
+          alert("Please select a file");
+        }
+      });
+    </script>
+  </body>
+</html>

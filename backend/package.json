@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "hl7": "^1.1.1",
+    "hl7-standard": "^1.0.4",
+    "multer": "^1.4.5-lts.1",
+    "nodehl7": "^0.2.6",
+    "nodemon": "^3.1.0",
+    "simple-hl7": "^3.2.4"
+  }
+}

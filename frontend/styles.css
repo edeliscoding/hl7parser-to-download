@@ -1,0 +1,43 @@
+body {
+  font-family: Roboto;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+}
+
+.main {
+  max-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wrapper {
+  max-width: 600px;
+  max-height: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 0.6px solid #ccc;
+  border-radius: 5px;
+}
+
+.upload {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  padding: 5px;
+}
+
+input[type="file"] {
+  padding: 10px 16px;
+  cursor: pointer;
+}
