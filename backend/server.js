@@ -59,6 +59,7 @@ app.post("/parseHL7", upload.single("hl7File"), async (req, res) => {
     const obxData = [];
     const obxSegments = hl7.getSegments("OBX");
     for (const obx of obxSegments) {
+      // console.log(obx);
       obxData.push({
         Type: obx.get("OBX.3"),
         Result: obx.get("OBX.5"),
@@ -68,15 +69,31 @@ app.post("/parseHL7", upload.single("hl7File"), async (req, res) => {
       });
     }
 
-    // const formattedOutput = [
-    //   { "Message Header": messageHeader },
-    //   { "Patient Information": patientInformation },
-    //   ...notes,
-    //   { "OBX Data": obxData },
-    // ];
+    // const obxDataFormatted = obxData.map((obx, index) => {
+    //   const label = obx.get("OBX.3.1");
+    //   const value = obx.get("OBX.5");
+    //   return { label, value };
+    // });
 
-    // res.json(formattedOutput);
-    // Create workbook
+    // const obxDataFormatted = obxData.map((obx, index) => {
+    //   const label = obx.Type; // Access Type property directly
+    //   const value = obx.Result; // Access Result property directly
+    //   return { label, value };
+    // });
+
+    // const obxDataFormatted = obxData.map((obx, index) => {
+    //   const label = obx["OBX.3.2"]; // Access label from OBX.3.2
+    //   const value = obx["OBX.3.5"]; // Access value from OBX.3.5
+    //   return { label, value };
+    // });
+
+    const obxDataFormatted = obxData.map((obx, index) => {
+      // Parse the label from obx.Type
+      const label = obx.Type["OBX.3.5"];
+      const value = obx.Result; // Access Result property directly
+      return { label, value };
+    });
+
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("HL7 Data");
 
@@ -139,38 +156,26 @@ app.post("/parseHL7", upload.single("hl7File"), async (req, res) => {
         value: messageHeader.Version,
       },
       ...notes.flatMap((note, index) =>
-        note.Notes.map((noteData) => ({
+        note.Notes.map((noteData, noteIndex) => ({
           section: "Notes",
           property: `Note ${index + 1}`,
           value: noteData.Note,
         }))
       ),
-      ...obxData.map((obx, index) => ({
+      // ...obxData.flatMap((obx, index) => {
+      //   return Object.entries(obx).map(([label, value]) => ({
+      //     section: "OBX Data",
+      //     property: label,
+      //     value: `${value} ${index + 1}`,
+      //   }));
+      // }),
+      ...obxDataFormatted.map((obx, index) => ({
         section: "OBX Data",
-        property: `Type ${index + 1}`,
-        value: obx.Type,
-      })),
-      ...obxData.map((obx, index) => ({
-        section: "OBX Data",
-        property: `Result ${index + 1}`,
-        value: obx.Result,
-      })),
-      ...obxData.map((obx, index) => ({
-        section: "OBX Data",
-        property: `Units ${index + 1}`,
-        value: obx.Units,
-      })),
-      ...obxData.map((obx, index) => ({
-        section: "OBX Data",
-        property: `Reference ${index + 1}`,
-        value: obx.Reference,
-      })),
-      ...obxData.map((obx, index) => ({
-        section: "OBX Data",
-        property: `Abnormal ${index + 1}`,
-        value: obx.Abnormal,
+        property: obx.label,
+        value: obx.value,
       })),
     ];
+
     worksheet.addRows(data);
 
     // Generate Excel file
@@ -186,7 +191,7 @@ app.post("/parseHL7", upload.single("hl7File"), async (req, res) => {
     // Send Excel file as response
     res.send(buffer);
   } catch (error) {
-    onsole.error("Error parsing HL7 message:", error);
+    console.error("Error parsing HL7 message:", error);
   }
 });
 app.listen(port, () => {
