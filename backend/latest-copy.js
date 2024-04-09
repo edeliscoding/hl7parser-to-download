@@ -74,6 +74,23 @@ app.post("/parseHL7", upload.single("hl7File"), async (req, res) => {
       patients.push(currentPatient); // Push the new patient object into the patients array
     }
 
+    // if (segmentType === "MSH") {
+    //   // Extract message header information
+    //   const messageHeader = {
+    //     App: fields[3],
+    //     Facility: fields[4],
+    //     "Msg Time": convertDate(fields[7]),
+    //     "Control ID": fields[10],
+    //     Type: fields[9].split("^")[0],
+    //     Version: fields[12],
+    //   };
+    //   // currentPatient.messageHeaders.push(messageHeader); // Push message header data into patient's messageHeaders array
+    //   if (!currentPatient.messageHeaders) {
+    //     currentPatient.messageHeaders = []; // Initialize messageHeaders array if it's not already initialized
+    //   }
+    //   currentPatient.messageHeaders.push(messageHeader);
+    // }
+
     if (segmentType === "NTE") {
       // Extract note
       const note = fields[3];
@@ -110,32 +127,24 @@ app.post("/parseHL7", upload.single("hl7File"), async (req, res) => {
     if (mshData) {
       const mshFields = mshData.split("|");
       const mshHeaderData = [
-        { section: "MSH Segment", property: "App", value: mshFields[2] || "" },
-        {
-          section: "MSH Segment",
-          property: "Facility",
-          value: mshFields[3] || "",
-        },
+        { section: "MSH Segment", property: "App", value: mshFields[3] },
+        { section: "MSH Segment", property: "Facility", value: mshFields[4] },
         {
           section: "MSH Segment",
           property: "Msg Time",
-          value: mshFields[6] ? convertDateTime(mshFields[6]) : "",
+          value: convertDateTime(mshFields[7]),
         },
         {
           section: "MSH Segment",
           property: "Control ID",
-          value: mshFields[9] || "",
+          value: mshFields[10],
         },
         {
           section: "MSH Segment",
           property: "Type",
-          value: mshFields[8] ? mshFields[8].split("^")[0] : "",
+          value: mshFields[9].split("^")[0],
         },
-        {
-          section: "MSH Segment",
-          property: "Version",
-          value: mshFields[11] || "",
-        },
+        { section: "MSH Segment", property: "Version", value: mshFields[12] },
       ];
       worksheet.addRows(mshHeaderData);
       // Add blank row after MSH segment data
